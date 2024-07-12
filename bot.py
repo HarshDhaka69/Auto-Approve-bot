@@ -103,7 +103,7 @@ async def chk(_, cb : CallbackQuery):
                     ],[
                         InlineKeyboardButton("➕ Add me to your Chat ➕", url="https://t.me/AutoAcceptMemberBot?startchannel=true&admin=post_messages+delete_messages+edit_messages+invite_users+promote_members")
                     ],[
-                        InlineKeyboardButton("Help", url="https://t.me/SDAutoApproveBot?startgroup"),
+                        InlineKeyboardButton("Help", url="https://t.me/AnshuSigroha"),
                         InlineKeyboardButton("Updates", url="https://t.me/AnshuSigroha")
                     ]
                 ]
