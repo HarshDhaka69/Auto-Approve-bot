@@ -1,3 +1,4 @@
+from bot import app
 from pyrogram.types import CallbackQuery
 from pyrogram import filters
 
