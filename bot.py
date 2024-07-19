@@ -88,6 +88,37 @@ async def op(_, m :Message):
             ]
         )
         await m.reply_text("You must join @AnshuSigroha to use me.".format(cfg.FSUB), reply_markup=key)
+        
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ approveall ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Function to check if a user is an admin
+async def is_admin(client, chat_id, user_id):
+    member = await client.get_chat_member(chat_id, user_id)
+    return member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]
+
+# Function to approve all pending join requests and send a welcome message
+async def approve_all(client, message):
+    chat_id = message.chat.id
+    welcome_message = "Welcome to the group!"
+
+    try:
+        # Fetch pending join requests
+        async for member in client.get_chat_members(chat_id, filter=ChatMemberStatus.RESTRICTED):
+            if member.joined_date is None:  # Only approve pending requests
+                await client.approve_chat_join_request(chat_id, member.user.id)
+                await client.send_message(chat_id, f"Welcome {member.user.mention}!\n{welcome_message}")
+
+        await message.reply("All pending join requests have been approved!")
+    except Exception as e:
+        await message.reply(f"An error occurred: {e}")
+
+# Command handler to trigger the auto-approve function
+@app.on_message(filters.command("approveall") & filters.group)
+async def on_approve_all(client, message):
+    if await is_admin(client, message.chat.id, message.from_user.id):
+        await approve_all(client, message)
+    else:
+        await message.reply("You need to be an admin to use this command.")
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ callback ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
