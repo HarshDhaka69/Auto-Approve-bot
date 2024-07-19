@@ -4,7 +4,9 @@ from pyrogram.errors import UserNotParticipant
 from pyrogram.errors.exceptions.flood_420 import FloodWait
 from database import add_user, add_group, all_users, all_groups, users, remove_user
 from configs import cfg
-import random, asyncio
+import random, asyncio, logging
+
+logging.basicConfig(level=logging.INFO)
 
 app = Client(
     "approver",
@@ -13,7 +15,15 @@ app = Client(
     bot_token=cfg.BOT_TOKEN
 )
 
+photo="https://graph.org/file/a60b8722ca747117a0e0b.png"
+
+stxt="""👋 Hey {},\n\n➻ I Can Accept User Join Requests Automatically.\n➻ I Can Accept All Pending Requests.\n\n➻ Add Me To Your Chat And Make Admin With Invite Users Via Link Rights."""
+skey=InlineKeyboardMarkup([[InlineKeyboardButton(f"➕ Add me to your Group ➕", url=f"https://t.me/AutoAcceptMemberBot?startgroup=true&admin=invite_users+promote_members+delete_messages")],[InlineKeyboardButton(f"➕ Add me to your Channel ➕", url=f"https://t.me/AutoAcceptMemberBot?startchannel=true&admin=post_messages+delete_messages+edit_messages+invite_users+promote_members"),],[InlineKeyboardButton("Help", callback_data="help"),InlineKeyboardButton("Updates", url=f"https://t.me/AnshuSigroha")],])
+
 htxt="""Here Is My Help Menu\n\n<u><b>User Commands To Be Used In Groups And Pm</u></b>\n\n<blockquote>» /start : Starts The Bot.\n» /help : Showcase The Help Menu.\n» /info [id/username/reply]: Extract Information.\n» /id [username or reply]: Extract The Id.</blockquote>\n\n<b><u>Admin Commands To Be Used In Groups Or Channel</b></u>\n\n<blockquote>» /welcome [on/off]: To Enable/Disable Custom Welcome Message. This Is To Be Used In Groups Only.\n» /approveall : Approves All The Pending Requests. This Can Be Used In Groups And Channels.</blockquote>"""
+
+bkey=InlineKeyboardMarkup([[InlineKeyboardButton("Back", callback_data="back")]])
+ckey=InlineKeyboardMarkup([[InlineKeyboardButton("Close", callback_data="close")]])
 
 gif = [
     'https://telegra.ph/file/a5a2bb456bf3eecdbbb99.mp4',
@@ -98,34 +108,33 @@ async def op(_, m :Message):
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ approveall ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Function to check if a user is an admin
-async def is_admin(client, chat_id, user_id):
-    member = await client.get_chat_member(chat_id, user_id)
-    return member.status in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]
-
-# Function to approve all pending join requests and send a welcome message
 @app.on_message(filters.command("approveall"))
-async def approve_all(client, message):
+async def approve_all(client: Client, message: Message):
     chat_id = message.chat.id
     welcome_message = "Welcome to the group!"
 
     try:
-        # Fetch pending join requests
-        async for member in client.get_chat_members(chat_id, filter=enums.ChatMembersFilter.RESTRICTED):
-            if member.user.id not in [u.id for u in await client.get_chat_members(chat_id, filter=enums.ChatMembersFilter.ALL)]:  # Check if the member has not yet joined
-                await client.approve_chat_join_request(chat_id, member.user.id)
-                await client.send_message(chat_id, f"Welcome {member.user.mention}!\n{welcome_message}")
+        # Check if the message sender is an admin
+        if await is_admin(client, chat_id, message.from_user.id):
+            # Fetch pending join requests
+            async for member in client.get_chat_join_requests(chat_id, filter=enums.ChatMembersFilter.RESTRICTED):
+                if member.user:
+                    user_id = member.user.id
+                    # Check if the user is actually restricted and not yet approved
+                    if member.status == enums.ChatMemberStatus.RESTRICTED:
+                        await client.approve_chat_join_request(chat_id, user_id)
+                        await client.send_message(chat_id, f"Welcome {member.user.mention}!\n{welcome_message}")
 
-        await message.reply("All pending join requests have been approved!")
+            await message.reply("All pending join requests have been approved!")
+        else:
+            await message.reply("You need to be an admin to use this command.")
     except Exception as e:
         await message.reply(f"An error occurred: {e}")
 
-# Command handler to trigger the auto-approve function
-@app.on_message(filters.command("approveall") & filters.group)
-async def on_approve_all(client, message: Message):
-    if await is_admin(client, message.chat.id, message.from_user.id):
-        await approve_all(client, message)
-    else:
-        await message.reply("You need to be an admin to use this command.")
+# Helper function to check if the user is an admin
+async def is_admin(client: Client, chat_id: int, user_id: int) -> bool:
+    chat_member = await client.get_chat_member(chat_id, user_id)
+    return chat_member.status in (enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.CREATOR)
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ callback ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -169,10 +178,9 @@ async def help(_, query: CallbackQuery):
 async def back(_, query: CallbackQuery):
     u = query.from_user.mention
     b = app.me.mention
-    stxt = f"""👋 Hi {u}!\n\nI'm {b}. Here are the commands you can use!"""
-    skey = InlineKeyboardMarkup(
-        [[InlineKeyboardButton("Help", callback_data="help")]]
-    )
+    stxt="""👋 Hey {},\n\n➻ I Can Accept User Join Requests Automatically.\n➻ I Can Accept All Pending Requests.\n\n➻ Add Me To Your Chat And Make Admin With Invite Users Via Link Rights."""
+    skey=InlineKeyboardMarkup([[InlineKeyboardButton(f"➕ Add me to your Group ➕", url=f"https://t.me/AutoAcceptMemberBot?startgroup=true&admin=invite_users+promote_members+delete_messages")],[InlineKeyboardButton(f"➕ Add me to your Channel ➕", url=f"https://t.me/AutoAcceptMemberBot?startchannel=true&admin=post_messages+delete_messages+edit_messages+invite_users+promote_members"),],[InlineKeyboardButton("Help", callback_data="help"),InlineKeyboardButton("Updates", url=f"https://t.me/AnshuSigroha")],]
+                              )
     await query.edit_message_text(text=stxt, reply_markup=skey)
 
 #Close
