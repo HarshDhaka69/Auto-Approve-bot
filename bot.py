@@ -65,7 +65,7 @@ async def op(_, m :Message):
                 ]
             )
             add_user(m.from_user.id)
-           await m.reply_photo(
+            await m.reply_photo(
     "https://graph.org/file/9d7084b4468f9cf219b5e.jpg",
     caption="👋 Hey {},\n\n➻ I Can Accept User Join Requests Automatically.\n\n➻ I Can Accept All Pending Requests.\n\n➻ Add Me To Your Chat And Make Admin With Invite Users Via Link Rights".format(m.from_user.mention),
     reply_markup=keyboard
