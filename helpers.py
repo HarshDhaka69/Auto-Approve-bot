@@ -1,6 +1,6 @@
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from configs import config 
+from configs import cfg
 
 sphoto="https://graph.org/file/a60b8722ca747117a0e0b.png"
 
