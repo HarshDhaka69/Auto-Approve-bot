@@ -110,8 +110,8 @@ async def approve_all(client, message):
 
     try:
         # Fetch pending join requests
-        async for member in client.get_chat_members(chat_id, filter=enums.ChatMemberStatus.RESTRICTED):
-            if member.joined_date is None:  # Only approve pending requests
+        async for member in client.get_chat_members(chat_id, filter=enums.ChatMembersFilter.RESTRICTED):
+            if member.user.id not in [u.id for u in await client.get_chat_members(chat_id, filter=enums.ChatMembersFilter.ALL)]:  # Check if the member has not yet joined
                 await client.approve_chat_join_request(chat_id, member.user.id)
                 await client.send_message(chat_id, f"Welcome {member.user.mention}!\n{welcome_message}")
 
@@ -121,7 +121,7 @@ async def approve_all(client, message):
 
 # Command handler to trigger the auto-approve function
 @app.on_message(filters.command("approveall") & filters.group)
-async def on_approve_all(client, message):
+async def on_approve_all(client, message: Message):
     if await is_admin(client, message.chat.id, message.from_user.id):
         await approve_all(client, message)
     else:
