@@ -92,8 +92,6 @@ async def op(_, m :Message):
             ]
         )
         await m.reply_text("You must join @AnshuSigroha to use me.".format(cfg.FSUB), reply_markup=key)
-
-
         
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ approveall ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
