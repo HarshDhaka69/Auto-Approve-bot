@@ -92,6 +92,8 @@ async def op(_, m :Message):
             ]
         )
         await m.reply_text("You must join @AnshuSigroha to use me.".format(cfg.FSUB), reply_markup=key)
+
+
         
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ approveall ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -148,6 +150,25 @@ async def chk(_, cb : CallbackQuery):
         print(cb.from_user.first_name +" Is started Your Bot!")
     except UserNotParticipant:
         await cb.answer("You must join @AnshuSigroha to use me.")
+
+#Help
+@app.on_callback_query(filters.regex("help"))
+async def help(app, query: CallbackQuery):
+    u = query.from_user.first_name
+    b = app.me.first_name
+    await query.edit_message_text(text=htxt.format(u,b,b), reply_markup=bkey)
+
+#Back
+@app.on_callback_query(filters.regex("back"))
+async def back(app, query: CallbackQuery):
+    u = query.from_user.mention
+    b = app.me.mention
+    await query.edit_message_text(text=stxt.format(u,b,b), reply_markup=skey)
+
+#Close
+@app.on_callback_query(filters.regex("close"))
+async def close(app, query: CallbackQuery):
+    await query.message.delete()
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ info ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
