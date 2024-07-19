@@ -4,7 +4,6 @@ from pyrogram.errors import UserNotParticipant
 from pyrogram.errors.exceptions.flood_420 import FloodWait
 from database import add_user, add_group, all_users, all_groups, users, remove_user
 from configs import cfg
-from helpers import htxt, stxt, bkey, skey
 import random, asyncio
 
 app = Client(
@@ -13,6 +12,8 @@ app = Client(
     api_hash=cfg.API_HASH,
     bot_token=cfg.BOT_TOKEN
 )
+
+htxt="""Here Is My Help Menu\n\n<u><b>User Commands To Be Used In Groups And Pm</u></b>\n\n<blockquote>» /start : Starts The Bot.\n» /help : Showcase The Help Menu.\n» /info [id/username/reply]: Extract Information.\n» /id [username or reply]: Extract The Id.</blockquote>\n\n<b><u>Admin Commands To Be Used In Groups Or Channel</b></u>\n\n<blockquote>» /welcome [on/off]: To Enable/Disable Custom Welcome Message. This Is To Be Used In Groups Only.\n» /approveall : Approves All The Pending Requests. This Can Be Used In Groups And Channels.</blockquote>"""
 
 gif = [
     'https://telegra.ph/file/a5a2bb456bf3eecdbbb99.mp4',
