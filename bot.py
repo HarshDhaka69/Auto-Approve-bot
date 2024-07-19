@@ -152,22 +152,30 @@ async def chk(_, cb : CallbackQuery):
         await cb.answer("You must join @AnshuSigroha to use me.")
 
 #Help
-@app.on_callback_query(filters.regex("help"))
-async def help(app, query: CallbackQuery):
+async def help(_, query: CallbackQuery):
     u = query.from_user.first_name
     b = app.me.first_name
-    await query.edit_message_text(text=htxt.format(u,b,b), reply_markup=bkey)
+    await query.edit_message_text(
+        text=htxt,
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("Back", callback_data="back")]]
+        )
+    )
 
 #Back
 @app.on_callback_query(filters.regex("back"))
-async def back(app, query: CallbackQuery):
+async def back(_, query: CallbackQuery):
     u = query.from_user.mention
     b = app.me.mention
-    await query.edit_message_text(text=stxt.format(u,b,b), reply_markup=skey)
+    stxt = f"""👋 Hi {u}!\n\nI'm {b}. Here are the commands you can use!"""
+    skey = InlineKeyboardMarkup(
+        [[InlineKeyboardButton("Help", callback_data="help")]]
+    )
+    await query.edit_message_text(text=stxt, reply_markup=skey)
 
 #Close
 @app.on_callback_query(filters.regex("close"))
-async def close(app, query: CallbackQuery):
+async def close(_, query: CallbackQuery):
     await query.message.delete()
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ info ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -186,7 +194,7 @@ async def dbtool(_, m : Message):
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Broadcast ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 @app.on_message(filters.command("bcast") & filters.user(cfg.SUDO))
-async def bcast(_, m : Message):
+async def bcast(_, m: Message):
     allusers = users
     lel = await m.reply_text("`⚡️ Processing...`")
     success = 0
@@ -196,29 +204,28 @@ async def bcast(_, m : Message):
     for usrs in allusers.find():
         try:
             userid = usrs["user_id"]
-            #print(int(userid))
             if m.command[0] == "bcast":
                 await m.reply_to_message.copy(int(userid))
-            success +=1
+            success += 1
         except FloodWait as ex:
             await asyncio.sleep(ex.value)
             if m.command[0] == "bcast":
                 await m.reply_to_message.copy(int(userid))
         except errors.InputUserDeactivated:
-            deactivated +=1
+            deactivated += 1
             remove_user(userid)
         except errors.UserIsBlocked:
-            blocked +=1
+            blocked += 1
         except Exception as e:
             print(e)
-            failed +=1
+            failed += 1
 
-    await lel.edit(f"✅Successfull to `{success}` users.\n❌ Faild to `{failed}` users.\n👾 Found `{blocked}` Blocked users \n👻 Found `{deactivated}` Deactivated users.")
+    await lel.edit(f"✅ Successful to `{success}` users.\n❌ Failed to `{failed}` users.\n👾 Found `{blocked}` blocked users \n👻 Found `{deactivated}` deactivated users.")
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Broadcast Forward ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 @app.on_message(filters.command("fcast") & filters.user(cfg.SUDO))
-async def fcast(_, m : Message):
+async def fcast(_, m: Message):
     allusers = users
     lel = await m.reply_text("`⚡️ Processing...`")
     success = 0
@@ -228,24 +235,23 @@ async def fcast(_, m : Message):
     for usrs in allusers.find():
         try:
             userid = usrs["user_id"]
-            #print(int(userid))
             if m.command[0] == "fcast":
                 await m.reply_to_message.forward(int(userid))
-            success +=1
+            success += 1
         except FloodWait as ex:
             await asyncio.sleep(ex.value)
             if m.command[0] == "fcast":
                 await m.reply_to_message.forward(int(userid))
         except errors.InputUserDeactivated:
-            deactivated +=1
+            deactivated += 1
             remove_user(userid)
         except errors.UserIsBlocked:
-            blocked +=1
+            blocked += 1
         except Exception as e:
             print(e)
-            failed +=1
+            failed += 1
 
-    await lel.edit(f"✅Successfull to `{success}` users.\n❌ Faild to `{failed}` users.\n👾 Found `{blocked}` Blocked users \n👻 Found `{deactivated}` Deactivated users.")
-
+    await lel.edit(f"✅ Successful to `{success}` users.\n❌ Failed to `{failed}` users.\n👾 Found `{blocked}` blocked users \n👻 Found `{deactivated}` deactivated users.")
+    
 print("I'm Alive Now!")
 app.run()
