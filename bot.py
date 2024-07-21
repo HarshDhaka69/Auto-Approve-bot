@@ -5,6 +5,7 @@ from pyrogram.errors.exceptions.flood_420 import FloodWait
 from database import add_user, add_group, all_users, all_groups, users, remove_user
 from configs import cfg
 import random, asyncio, logging
+from os import environ
 
 logging.basicConfig(level=logging.INFO)
 
@@ -14,6 +15,11 @@ app = Client(
     api_hash=cfg.API_HASH,
     bot_token=cfg.BOT_TOKEN
 )
+
+SESSION = environ.get("SESSION", "BAGyojMAjnLbu_1c9LwGqet0oaKPGvkuUsoen2NGJTtzWJetgn0U4wLdsYAjRDoyafE4IZsP5UaqtZxf__6fkh4hoVHkuZ-exl8hyC27K5w0k3fiUawYb6gH9ubz8Qaq29WESma6JYK4yYE7AaKEwy-e1liLZPD3he-6AXgDq7gp4p6qgVPGNVygSZOYV-8C7bMQbSEKnRfHcYFsEEF-rVWMBjJil8T4TXK8-Ar4f1MQ3zlwzGX4yMu_9LMEevmqMUIRNXwvH0R7nN9wqwVUjGeXfZBuN_8MXDJ46b6dQ8p739M3EUHe-AQj9hi0Cvmkw_gHZepZnH68xmSlfojbYNiT_xDWDQAAAAFnuV93AA")        
+User = Client("AcceptUser", session_string=SESSION)
+
+User.start()
 
 photo="https://graph.org/file/a60b8722ca747117a0e0b.png"
 
@@ -106,35 +112,30 @@ async def op(_, m :Message):
         await m.reply_text("You must join @AnshuSigroha to use me.".format(cfg.FSUB), reply_markup=key)
         
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ approveall ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-# Function to check if a user is an admin
-@app.on_message(filters.command("approveall"))
-async def approve_all(client: Client, message: Message):
+@User.on_message(filters.command("approveall") & filters.group & filters.channel)
+async def approve_all(client, message):
     chat_id = message.chat.id
-    welcome_message = "Welcome to the group!"
+    
+    # Delete the command message
+    await message.delete()
 
-    try:
-        # Check if the message sender is an admin
-        if await is_admin(client, chat_id, message.from_user.id):
-            # Fetch pending join requests
-            async for member in client.get_chat_join_requests(chat_id, filter=enums.ChatMembersFilter.RESTRICTED):
-                if member.user:
-                    user_id = member.user.id
-                    # Check if the user is actually restricted and not yet approved
-                    if member.status == enums.ChatMemberStatus.RESTRICTED:
-                        await client.approve_chat_join_request(chat_id, user_id)
-                        await client.send_message(chat_id, f"Welcome {member.user.mention}!\n{welcome_message}")
-
+    while True:
+        try:
+            # Get all pending join requests
+            pending_requests = await client.get_chat_requests(chat_id)
+            for request in pending_requests:
+                await client(functions.messages.ApproveChatJoinRequestRequest(chat_id, request.user_id))
             await message.reply("All pending join requests have been approved!")
-        else:
-            await message.reply("You need to be an admin to use this command.")
-    except Exception as e:
-        await message.reply(f"An error occurred: {e}")
+            break  # Exit the loop after successful approval
 
-# Helper function to check if the user is an admin
-async def is_admin(client: Client, chat_id: int, user_id: int) -> bool:
-    chat_member = await client.get_chat_member(chat_id, user_id)
-    return chat_member.status in (enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.CREATOR)
+        except FloodWait as e:
+            # Log the flood wait time and sleep for the duration
+            logger.warning(f"FloodWait exception caught. Waiting for {e.seconds} seconds.")
+            await asyncio.sleep(e.seconds)
+        except Exception as e:
+            logger.error(f"An error occurred: {e}")
+            await message.reply("An error occurred while processing the join requests.")
+            break  # Exit the loop if there’s a non-recoverable error
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ callback ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
